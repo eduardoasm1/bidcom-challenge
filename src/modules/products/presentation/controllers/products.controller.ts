@@ -4,6 +4,7 @@ import {
   Post,
   Put,
   Patch,
+  Delete,
   Body,
   Param,
   Query,
@@ -21,6 +22,7 @@ import { CreateProductUseCase } from '../../domain/use-cases/create-product.use-
 import { GetProductByIdUseCase } from '../../domain/use-cases/get-product-by-id.use-case';
 import { UpdateProductUseCase } from '../../domain/use-cases/update-product.use-case';
 import { PatchProductUseCase } from '../../domain/use-cases/patch-product.use-case';
+import { DeleteProductUseCase } from '../../domain/use-cases/delete-product.use-case';
 import { CreateProductDto } from '../dtos/create-product.dto';
 import { PatchProductDto } from '../dtos/patch-product.dto';
 
@@ -34,6 +36,7 @@ export class ProductsController {
     private readonly getProductByIdUseCase: GetProductByIdUseCase,
     private readonly updateProductUseCase: UpdateProductUseCase,
     private readonly patchProductUseCase: PatchProductUseCase,
+    private readonly deleteProductUseCase: DeleteProductUseCase,
   ) { }
 
   @Get('search')
@@ -181,6 +184,25 @@ export class ProductsController {
     });
 
     return ProductResponseDto.fromEntity(product);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Eliminar un producto',
+    operationId: 'deleteProduct',
+  })
+  @ApiResponse({
+    status: 204,
+    description: 'Producto eliminado',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Producto no encontrado',
+    type: StandardErrorDto,
+  })
+  async delete(@Param('id') id: string): Promise<void> {
+    await this.deleteProductUseCase.execute(id);
   }
 
   @Post()

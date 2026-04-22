@@ -64,6 +64,10 @@ class FakeProductRepository implements IProductRepository {
     this.products.set(id, patched);
     return Promise.resolve(patched);
   }
+
+  delete(): Promise<void> {
+    return Promise.resolve();
+  }
 }
 
 describe('PatchProductUseCase', () => {

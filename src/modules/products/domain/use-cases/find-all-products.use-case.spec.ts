@@ -45,6 +45,10 @@ class FakeProductRepository implements IProductRepository {
   patch(): Promise<Product> {
     return Promise.resolve({} as Product);
   }
+
+  delete(): Promise<void> {
+    return Promise.resolve();
+  }
 }
 
 describe('FindAllProductsUseCase', () => {

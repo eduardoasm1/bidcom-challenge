@@ -267,4 +267,17 @@ describe('ProductRepository (Integration)', () => {
       expect(fromDb!.stock).toBe(50);
     });
   });
+
+  describe('delete', () => {
+    it('should delete product from database', async () => {
+      const created = await aProduct()
+        .withName('Producto a Eliminar')
+        .build(prisma);
+
+      await repo.delete(created.id);
+
+      const result = await repo.findById(created.id);
+      expect(result).toBeNull();
+    });
+  });
 });

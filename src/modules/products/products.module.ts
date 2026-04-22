@@ -7,6 +7,7 @@ import { CreateProductUseCase } from './domain/use-cases/create-product.use-case
 import { GetProductByIdUseCase } from './domain/use-cases/get-product-by-id.use-case';
 import { UpdateProductUseCase } from './domain/use-cases/update-product.use-case';
 import { PatchProductUseCase } from './domain/use-cases/patch-product.use-case';
+import { DeleteProductUseCase } from './domain/use-cases/delete-product.use-case';
 
 @Module({
   controllers: [ProductsController],
@@ -21,6 +22,7 @@ import { PatchProductUseCase } from './domain/use-cases/patch-product.use-case';
     GetProductByIdUseCase,
     UpdateProductUseCase,
     PatchProductUseCase,
+    DeleteProductUseCase,
   ],
 })
 export class ProductsModule {}

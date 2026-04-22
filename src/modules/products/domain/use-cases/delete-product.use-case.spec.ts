@@ -1,6 +1,6 @@
 import type { IProductRepository } from '../interfaces/product.repository.interface';
 import { Product } from '../entities/product.entity';
-import { GetProductByIdUseCase } from './get-product-by-id.use-case';
+import { DeleteProductUseCase } from './delete-product.use-case';
 import { NotFoundException } from '@nestjs/common';
 
 const makeProduct = (overrides: Partial<Product> = {}): Product =>
@@ -8,9 +8,9 @@ const makeProduct = (overrides: Partial<Product> = {}): Product =>
     overrides.id ?? 'uuid-123',
     overrides.name ?? 'Producto Test',
     overrides.description ?? null,
-    overrides.category ?? 'Test',
+    overrides.category ?? 'General',
     overrides.brand ?? 'TestBrand',
-    overrides.price ?? 99.99,
+    overrides.price ?? 100,
     overrides.stock ?? 10,
     overrides.createdAt ?? new Date(),
     overrides.updatedAt ?? new Date(),
@@ -18,8 +18,9 @@ const makeProduct = (overrides: Partial<Product> = {}): Product =>
 
 class FakeProductRepository implements IProductRepository {
   private products: Map<string, Product> = new Map();
+  deletedIds: string[] = [];
 
-  setProduct(product: Product) {
+  addProduct(product: Product) {
     this.products.set(product.id, product);
   }
 
@@ -47,28 +48,30 @@ class FakeProductRepository implements IProductRepository {
     return Promise.resolve({} as Product);
   }
 
-  delete(): Promise<void> {
+  delete(id: string): Promise<void> {
+    this.deletedIds.push(id);
+    this.products.delete(id);
     return Promise.resolve();
   }
 }
 
-describe('GetProductByIdUseCase', () => {
-  let useCase: GetProductByIdUseCase;
+describe('DeleteProductUseCase', () => {
+  let useCase: DeleteProductUseCase;
   let fakeRepo: FakeProductRepository;
 
   beforeEach(() => {
     fakeRepo = new FakeProductRepository();
-    useCase = new GetProductByIdUseCase(fakeRepo);
+    useCase = new DeleteProductUseCase(fakeRepo);
   });
 
-  it('should return product when found', async () => {
-    const product = makeProduct({ id: 'uuid-456' });
-    fakeRepo.setProduct(product);
+  it('should delete product when found', async () => {
+    fakeRepo.addProduct(makeProduct({ id: 'uuid-to-delete' }));
 
-    const result = await useCase.execute('uuid-456');
+    await useCase.execute('uuid-to-delete');
 
-    expect(result.id).toBe('uuid-456');
-    expect(result.name).toBe(product.name);
+    expect(fakeRepo.deletedIds).toContain('uuid-to-delete');
+    const stillExists = await fakeRepo.findById('uuid-to-delete');
+    expect(stillExists).toBeNull();
   });
 
   it('should throw NotFoundException when product not found', async () => {

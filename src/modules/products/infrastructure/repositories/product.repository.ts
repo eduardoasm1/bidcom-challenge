@@ -124,4 +124,10 @@ export class ProductRepository implements IProductRepository {
     });
     return this.toEntity(record);
   }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.db.product.delete({
+      where: { id },
+    });
+  }
 }
