@@ -5,6 +5,7 @@ import { ProductsController } from './presentation/controllers/products.controll
 import { FindAllProductsUseCase } from './domain/use-cases/find-all-products.use-case';
 import { CreateProductUseCase } from './domain/use-cases/create-product.use-case';
 import { GetProductByIdUseCase } from './domain/use-cases/get-product-by-id.use-case';
+import { UpdateProductUseCase } from './domain/use-cases/update-product.use-case';
 
 @Module({
   controllers: [ProductsController],
@@ -17,6 +18,7 @@ import { GetProductByIdUseCase } from './domain/use-cases/get-product-by-id.use-
     FindAllProductsUseCase,
     CreateProductUseCase,
     GetProductByIdUseCase,
+    UpdateProductUseCase,
   ],
 })
 export class ProductsModule {}

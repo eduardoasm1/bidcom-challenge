@@ -214,4 +214,30 @@ describe('ProductRepository (Integration)', () => {
       expect(result).toBeNull();
     });
   });
+
+  describe('update', () => {
+    it('should update and return product', async () => {
+      const created = await aProduct()
+        .withName('Nombre Original')
+        .withPrice(100)
+        .build(prisma);
+
+      const updated = await repo.update(created.id, {
+        name: 'Nombre Actualizado',
+        description: 'Nueva descripción',
+        category: 'Nueva Categoría',
+        brand: 'Nueva Marca',
+        price: 150,
+        stock: 20,
+      });
+
+      expect(updated.id).toBe(created.id);
+      expect(updated.name).toBe('Nombre Actualizado');
+      expect(updated.price).toBe(150);
+
+      // Verificar que realmente persistió
+      const fromDb = await repo.findById(created.id);
+      expect(fromDb!.name).toBe('Nombre Actualizado');
+    });
+  });
 });

@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Body,
   Param,
   Query,
@@ -18,6 +19,7 @@ import { StandardErrorDto } from '../../../../common/dtos/standard-error.dto';
 import { FindAllProductsUseCase } from '../../domain/use-cases/find-all-products.use-case';
 import { CreateProductUseCase } from '../../domain/use-cases/create-product.use-case';
 import { GetProductByIdUseCase } from '../../domain/use-cases/get-product-by-id.use-case';
+import { UpdateProductUseCase } from '../../domain/use-cases/update-product.use-case';
 import { CreateProductDto } from '../dtos/create-product.dto';
 
 @ApiTags('products')
@@ -28,6 +30,7 @@ export class ProductsController {
     private readonly findAllProductsUseCase: FindAllProductsUseCase,
     private readonly createProductUseCase: CreateProductUseCase,
     private readonly getProductByIdUseCase: GetProductByIdUseCase,
+    private readonly updateProductUseCase: UpdateProductUseCase,
   ) { }
 
   @Get('search')
@@ -109,6 +112,42 @@ export class ProductsController {
   })
   async getById(@Param('id') id: string): Promise<ProductResponseDto> {
     const product = await this.getProductByIdUseCase.execute(id);
+    return ProductResponseDto.fromEntity(product);
+  }
+
+  @Put(':id')
+  @ApiOperation({
+    summary: 'Reemplazar un producto',
+    operationId: 'updateProduct',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Producto actualizado',
+    type: ProductResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Request inválido',
+    type: StandardErrorDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Producto no encontrado',
+    type: StandardErrorDto,
+  })
+  async update(
+    @Param('id') id: string,
+    @Body() dto: CreateProductDto,
+  ): Promise<ProductResponseDto> {
+    const product = await this.updateProductUseCase.execute(id, {
+      name: dto.name,
+      description: dto.description,
+      category: dto.category,
+      brand: dto.brand,
+      price: dto.price,
+      stock: dto.stock,
+    });
+
     return ProductResponseDto.fromEntity(product);
   }
 

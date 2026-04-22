@@ -6,6 +6,7 @@ import {
   IProductRepository,
   SearchFilters,
   SearchProductsResult,
+  UpdateProductData,
 } from '../../domain/interfaces/product.repository.interface';
 import type { PrismaProductRecord } from '../types/product.types';
 
@@ -79,6 +80,21 @@ export class ProductRepository implements IProductRepository {
 
   async create(data: CreateProductData): Promise<Product> {
     const record = await this.prisma.db.product.create({
+      data: {
+        name: data.name,
+        description: data.description ?? null,
+        category: data.category,
+        brand: data.brand,
+        price: data.price,
+        stock: data.stock,
+      },
+    });
+    return this.toEntity(record);
+  }
+
+  async update(id: string, data: UpdateProductData): Promise<Product> {
+    const record = await this.prisma.db.product.update({
+      where: { id },
       data: {
         name: data.name,
         description: data.description ?? null,
