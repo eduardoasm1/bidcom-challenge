@@ -1,0 +1,158 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { PrismaModule } from '../../../../prisma/prisma.module';
+import { PrismaService } from '../../../../prisma/prisma.service';
+import { clearDatabase } from '../../../../testing/database.helper';
+import { aProduct } from '../../../../testing/builders/product.builder';
+import { ProductRepository } from './product.repository';
+
+describe('ProductRepository (Integration)', () => {
+  let module: TestingModule;
+  let repo: ProductRepository;
+  let prisma: PrismaService;
+
+  beforeAll(async () => {
+    module = await Test.createTestingModule({
+      imports: [PrismaModule],
+      providers: [ProductRepository],
+    }).compile();
+
+    repo = module.get(ProductRepository);
+    prisma = module.get(PrismaService);
+  });
+
+  afterAll(() => module.close());
+
+  beforeEach(() => clearDatabase(prisma));
+
+  describe('search', () => {
+    it('should return all products with no filters', async () => {
+      await aProduct().withName('Notebook').build(prisma);
+      await aProduct().withName('Mouse').build(prisma);
+
+      const result = await repo.search({ limit: 20, offset: 0 });
+
+      expect(result.total).toBe(2);
+      expect(result.items).toHaveLength(2);
+    });
+
+    it('should filter by name (partial, case insensitive)', async () => {
+      await aProduct().withName('Notebook Lenovo').build(prisma);
+      await aProduct().withName('notebook dell').build(prisma);
+      await aProduct().withName('Mouse Logitech').build(prisma);
+
+      const result = await repo.search({
+        name: 'notebook',
+        limit: 20,
+        offset: 0,
+      });
+
+      expect(result.total).toBe(2);
+      expect(
+        result.items.every((p) => p.name.toLowerCase().includes('notebook')),
+      ).toBe(true);
+    });
+
+    it('should filter by category', async () => {
+      await aProduct().withCategory('Laptops').build(prisma);
+      await aProduct().withCategory('Laptops').build(prisma);
+      await aProduct().withCategory('Peripherals').build(prisma);
+
+      const result = await repo.search({
+        category: 'Laptops',
+        limit: 20,
+        offset: 0,
+      });
+
+      expect(result.total).toBe(2);
+      expect(result.items.every((p) => p.category === 'Laptops')).toBe(true);
+    });
+
+    it('should filter by brand', async () => {
+      await aProduct().withBrand('Lenovo').build(prisma);
+      await aProduct().withBrand('Dell').build(prisma);
+
+      const result = await repo.search({
+        brand: 'Lenovo',
+        limit: 20,
+        offset: 0,
+      });
+
+      expect(result.total).toBe(1);
+      expect(result.items[0].brand).toBe('Lenovo');
+    });
+
+    it('should filter by minPrice', async () => {
+      await aProduct().withPrice(100).build(prisma);
+      await aProduct().withPrice(500).build(prisma);
+      await aProduct().withPrice(1500).build(prisma);
+
+      const result = await repo.search({ minPrice: 500, limit: 20, offset: 0 });
+
+      expect(result.total).toBe(2);
+      expect(result.items.every((p) => p.price >= 500)).toBe(true);
+    });
+
+    it('should filter by maxPrice', async () => {
+      await aProduct().withPrice(100).build(prisma);
+      await aProduct().withPrice(500).build(prisma);
+      await aProduct().withPrice(1500).build(prisma);
+
+      const result = await repo.search({ maxPrice: 500, limit: 20, offset: 0 });
+
+      expect(result.total).toBe(2);
+      expect(result.items.every((p) => p.price <= 500)).toBe(true);
+    });
+
+    it('should filter by price range', async () => {
+      await aProduct().withPrice(100).build(prisma);
+      await aProduct().withPrice(500).build(prisma);
+      await aProduct().withPrice(1500).build(prisma);
+
+      const result = await repo.search({
+        minPrice: 200,
+        maxPrice: 1000,
+        limit: 20,
+        offset: 0,
+      });
+
+      expect(result.total).toBe(1);
+      expect(result.items[0].price).toBe(500);
+    });
+
+    it('should apply limit and offset for pagination', async () => {
+      await aProduct().withName('Product A').build(prisma);
+      await aProduct().withName('Product B').build(prisma);
+      await aProduct().withName('Product C').build(prisma);
+
+      const page1 = await repo.search({ limit: 2, offset: 0 });
+      const page2 = await repo.search({ limit: 2, offset: 2 });
+
+      expect(page1.total).toBe(3);
+      expect(page1.items).toHaveLength(2);
+      expect(page2.total).toBe(3);
+      expect(page2.items).toHaveLength(1);
+    });
+
+    it('should return empty result when nothing matches', async () => {
+      await aProduct().withBrand('Lenovo').build(prisma);
+
+      const result = await repo.search({
+        brand: 'NonExistentBrand',
+        limit: 20,
+        offset: 0,
+      });
+
+      expect(result.total).toBe(0);
+      expect(result.items).toHaveLength(0);
+    });
+
+    it('should map price as number, not Decimal', async () => {
+      await aProduct().withPrice(999.99).build(prisma);
+
+      const result = await repo.search({ limit: 20, offset: 0 });
+
+      expect(typeof result.items[0].price).toBe('number');
+      expect(result.items[0].price).toBe(999.99);
+    });
+  });
+});
