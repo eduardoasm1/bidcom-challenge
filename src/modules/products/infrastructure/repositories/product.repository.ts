@@ -27,7 +27,7 @@ export class ProductRepository implements IProductRepository {
 
     return {
       total,
-      items: records.map((r) => this.toEntity(r)),
+      items: records.map((product) => this.toEntity(product)),
     };
   }
 
@@ -60,5 +60,12 @@ export class ProductRepository implements IProductRepository {
       record.createdAt,
       record.updatedAt,
     );
+  }
+
+  async findAllProducts(): Promise<Product[]> {
+    const records = await this.prisma.db.product.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+    return records.map((product) => this.toEntity(product));
   }
 }

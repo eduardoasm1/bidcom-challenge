@@ -17,4 +17,5 @@ export interface SearchProductsResult {
 
 export interface IProductRepository {
   search(filters: SearchFilters): Promise<SearchProductsResult>;
+  findAllProducts(): Promise<Product[]>;
 }

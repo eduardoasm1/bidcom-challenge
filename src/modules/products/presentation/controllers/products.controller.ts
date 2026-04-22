@@ -5,11 +5,15 @@ import { SearchProductsQueryDto } from '../dtos/search-products-query.dto';
 import { SearchProductsResponseDto } from '../dtos/search-products.response.dto';
 import { ProductResponseDto } from '../dtos/product.response.dto';
 import { StandardErrorDto } from '../../../../common/dtos/standard-error.dto';
+import { FindAllProductsUseCase } from '../../domain/use-cases/find-all-products.use-case';
 
 @ApiTags('products')
 @Controller('products')
 export class ProductsController {
-  constructor(private readonly searchProductsUseCase: SearchProductsUseCase) {}
+  constructor(
+    private readonly searchProductsUseCase: SearchProductsUseCase,
+    private readonly findAllProductsUseCase: FindAllProductsUseCase,
+  ) { }
 
   @Get('search')
   @ApiOperation({ summary: 'Buscar productos', operationId: 'searchProducts' })
@@ -47,5 +51,24 @@ export class ProductsController {
         ProductResponseDto.fromEntity(product),
       ),
     };
+  }
+
+  @Get()
+  @ApiOperation({
+    summary: 'Obtener lista de productos',
+    operationId: 'findAllProducts',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Resultados de búsqueda',
+    type: SearchProductsResponseDto,
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Error interno',
+    type: StandardErrorDto,
+  })
+  findAllProducts() {
+    return this.findAllProductsUseCase.execute();
   }
 }

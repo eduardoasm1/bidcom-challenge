@@ -31,6 +31,10 @@ class FakeProductRepository implements IProductRepository {
     this.capturedFilters = filters;
     return this.result;
   }
+
+  findAllProducts(): Promise<Product[]> {
+    return Promise.resolve([]);
+  }
 }
 
 describe('SearchProductsUseCase', () => {

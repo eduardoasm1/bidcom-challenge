@@ -12,11 +12,26 @@ interface ProductOverrides {
 export class ProductBuilder {
   private attrs: ProductOverrides = {};
 
-  withName(name: string) { this.attrs.name = name; return this; }
-  withCategory(category: string) { this.attrs.category = category; return this; }
-  withBrand(brand: string) { this.attrs.brand = brand; return this; }
-  withPrice(price: number) { this.attrs.price = price; return this; }
-  withStock(stock: number) { this.attrs.stock = stock; return this; }
+  withName(name: string) {
+    this.attrs.name = name;
+    return this;
+  }
+  withCategory(category: string) {
+    this.attrs.category = category;
+    return this;
+  }
+  withBrand(brand: string) {
+    this.attrs.brand = brand;
+    return this;
+  }
+  withPrice(price: number) {
+    this.attrs.price = price;
+    return this;
+  }
+  withStock(stock: number) {
+    this.attrs.stock = stock;
+    return this;
+  }
 
   async build(prisma: PrismaService) {
     return prisma.db.product.create({

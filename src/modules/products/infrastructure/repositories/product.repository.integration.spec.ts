@@ -155,4 +155,22 @@ describe('ProductRepository (Integration)', () => {
       expect(result.items[0].price).toBe(999.99);
     });
   });
+
+  describe('findAllProducts', () => {
+    it('should return all products', async () => {
+      await aProduct().withName('Product A').build(prisma);
+      await aProduct().withName('Product B').build(prisma);
+      await aProduct().withName('Product C').build(prisma);
+
+      const result = await repo.findAllProducts();
+
+      expect(result).toHaveLength(3);
+    });
+
+    it('should not return products if not have', async () => {
+      const result = await repo.findAllProducts();
+
+      expect(result).toHaveLength(0);
+    });
+  });
 });
