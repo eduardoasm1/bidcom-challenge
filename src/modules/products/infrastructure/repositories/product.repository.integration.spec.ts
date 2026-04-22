@@ -193,4 +193,25 @@ describe('ProductRepository (Integration)', () => {
       expect(result.createdAt).toBeInstanceOf(Date);
     });
   });
+
+  describe('findById', () => {
+    it('should return product when found', async () => {
+      const created = await aProduct()
+        .withName('Monitor Dell')
+        .withPrice(299.99)
+        .build(prisma);
+
+      const result = await repo.findById(created.id);
+
+      expect(result).not.toBeNull();
+      expect(result!.id).toBe(created.id);
+      expect(result!.name).toBe('Monitor Dell');
+    });
+
+    it('should return null when not found', async () => {
+      const result = await repo.findById('non-existent-id');
+
+      expect(result).toBeNull();
+    });
+  });
 });

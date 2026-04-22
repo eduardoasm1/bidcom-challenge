@@ -70,6 +70,13 @@ export class ProductRepository implements IProductRepository {
     return records.map((product) => this.toEntity(product));
   }
 
+  async findById(id: string): Promise<Product | null> {
+    const record = await this.prisma.db.product.findUnique({
+      where: { id },
+    });
+    return record ? this.toEntity(record) : null;
+  }
+
   async create(data: CreateProductData): Promise<Product> {
     const record = await this.prisma.db.product.create({
       data: {

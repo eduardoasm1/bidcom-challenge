@@ -4,6 +4,7 @@ import { ProductRepository } from './infrastructure/repositories/product.reposit
 import { ProductsController } from './presentation/controllers/products.controller';
 import { FindAllProductsUseCase } from './domain/use-cases/find-all-products.use-case';
 import { CreateProductUseCase } from './domain/use-cases/create-product.use-case';
+import { GetProductByIdUseCase } from './domain/use-cases/get-product-by-id.use-case';
 
 @Module({
   controllers: [ProductsController],
@@ -15,6 +16,7 @@ import { CreateProductUseCase } from './domain/use-cases/create-product.use-case
     SearchProductsUseCase,
     FindAllProductsUseCase,
     CreateProductUseCase,
+    GetProductByIdUseCase,
   ],
 })
 export class ProductsModule {}

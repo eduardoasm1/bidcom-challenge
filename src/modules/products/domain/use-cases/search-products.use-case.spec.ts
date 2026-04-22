@@ -29,11 +29,19 @@ class FakeProductRepository implements IProductRepository {
 
   search(filters: SearchFilters): Promise<SearchProductsResult> {
     this.capturedFilters = filters;
-    return this.result;
+    return Promise.resolve(this.result);
   }
 
   findAllProducts(): Promise<Product[]> {
     return Promise.resolve([]);
+  }
+
+  findById(): Promise<Product | null> {
+    return Promise.resolve(null);
+  }
+
+  create(): Promise<Product> {
+    return Promise.resolve({} as Product);
   }
 }
 

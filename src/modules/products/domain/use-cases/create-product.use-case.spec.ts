@@ -27,6 +27,10 @@ class FakeProductRepository implements IProductRepository {
     return Promise.resolve([]);
   }
 
+  findById(): Promise<Product | null> {
+    return Promise.resolve(null);
+  }
+
   create(data: CreateProductData): Promise<Product> {
     return Promise.resolve(
       makeProduct({

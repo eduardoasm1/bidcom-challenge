@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Query, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  HttpCode,
+  HttpStatus,
+  NotFoundException,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { SearchProductsUseCase } from '../../domain/use-cases/search-products.use-case';
 import { SearchProductsQueryDto } from '../dtos/search-products-query.dto';
@@ -7,6 +17,7 @@ import { ProductResponseDto } from '../dtos/product.response.dto';
 import { StandardErrorDto } from '../../../../common/dtos/standard-error.dto';
 import { FindAllProductsUseCase } from '../../domain/use-cases/find-all-products.use-case';
 import { CreateProductUseCase } from '../../domain/use-cases/create-product.use-case';
+import { GetProductByIdUseCase } from '../../domain/use-cases/get-product-by-id.use-case';
 import { CreateProductDto } from '../dtos/create-product.dto';
 
 @ApiTags('products')
@@ -16,6 +27,7 @@ export class ProductsController {
     private readonly searchProductsUseCase: SearchProductsUseCase,
     private readonly findAllProductsUseCase: FindAllProductsUseCase,
     private readonly createProductUseCase: CreateProductUseCase,
+    private readonly getProductByIdUseCase: GetProductByIdUseCase,
   ) { }
 
   @Get('search')
@@ -73,6 +85,31 @@ export class ProductsController {
   })
   findAllProducts() {
     return this.findAllProductsUseCase.execute();
+  }
+
+  @Get(':id')
+  @ApiOperation({
+    summary: 'Obtener un producto por ID',
+    operationId: 'getProductById',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Producto encontrado',
+    type: ProductResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Producto no encontrado',
+    type: StandardErrorDto,
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Error interno',
+    type: StandardErrorDto,
+  })
+  async getById(@Param('id') id: string): Promise<ProductResponseDto> {
+    const product = await this.getProductByIdUseCase.execute(id);
+    return ProductResponseDto.fromEntity(product);
   }
 
   @Post()
