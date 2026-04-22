@@ -3,12 +3,12 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Body,
   Param,
   Query,
   HttpCode,
   HttpStatus,
-  NotFoundException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { SearchProductsUseCase } from '../../domain/use-cases/search-products.use-case';
@@ -20,7 +20,9 @@ import { FindAllProductsUseCase } from '../../domain/use-cases/find-all-products
 import { CreateProductUseCase } from '../../domain/use-cases/create-product.use-case';
 import { GetProductByIdUseCase } from '../../domain/use-cases/get-product-by-id.use-case';
 import { UpdateProductUseCase } from '../../domain/use-cases/update-product.use-case';
+import { PatchProductUseCase } from '../../domain/use-cases/patch-product.use-case';
 import { CreateProductDto } from '../dtos/create-product.dto';
+import { PatchProductDto } from '../dtos/patch-product.dto';
 
 @ApiTags('products')
 @Controller('products')
@@ -31,6 +33,7 @@ export class ProductsController {
     private readonly createProductUseCase: CreateProductUseCase,
     private readonly getProductByIdUseCase: GetProductByIdUseCase,
     private readonly updateProductUseCase: UpdateProductUseCase,
+    private readonly patchProductUseCase: PatchProductUseCase,
   ) { }
 
   @Get('search')
@@ -112,6 +115,35 @@ export class ProductsController {
   })
   async getById(@Param('id') id: string): Promise<ProductResponseDto> {
     const product = await this.getProductByIdUseCase.execute(id);
+    return ProductResponseDto.fromEntity(product);
+  }
+
+  @Patch(':id')
+  @ApiOperation({
+    summary: 'Actualizar parcialmente un producto',
+    operationId: 'patchProduct',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Producto actualizado parcialmente',
+    type: ProductResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Request inválido',
+    type: StandardErrorDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Producto no encontrado',
+    type: StandardErrorDto,
+  })
+  async patch(
+    @Param('id') id: string,
+    @Body() dto: PatchProductDto,
+  ): Promise<ProductResponseDto> {
+    const product = await this.patchProductUseCase.execute(id, dto);
+
     return ProductResponseDto.fromEntity(product);
   }
 

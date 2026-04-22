@@ -1,9 +1,9 @@
 import type {
   IProductRepository,
-  UpdateProductData,
+  PatchProductData,
 } from '../interfaces/product.repository.interface';
 import { Product } from '../entities/product.entity';
-import { UpdateProductUseCase } from './update-product.use-case';
+import { PatchProductUseCase } from './patch-product.use-case';
 import { NotFoundException } from '@nestjs/common';
 
 const makeProduct = (overrides: Partial<Product> = {}): Product =>
@@ -42,62 +42,64 @@ class FakeProductRepository implements IProductRepository {
     return Promise.resolve({} as Product);
   }
 
-  update(id: string, data: UpdateProductData): Promise<Product> {
+  update(): Promise<Product> {
+    return Promise.resolve({} as Product);
+  }
+
+  patch(id: string, data: PatchProductData): Promise<Product> {
     const product = this.products.get(id);
     if (!product) throw new Error('Not found');
 
-    const updated = makeProduct({
+    const patched = makeProduct({
       ...product,
-      name: data.name,
-      description: data.description ?? null,
-      category: data.category,
-      brand: data.brand,
-      price: data.price,
-      stock: data.stock,
+      ...(data.name !== undefined && { name: data.name }),
+      ...(data.description !== undefined && {
+        description: data.description,
+      }),
+      ...(data.category !== undefined && { category: data.category }),
+      ...(data.brand !== undefined && { brand: data.brand }),
+      ...(data.price !== undefined && { price: data.price }),
+      ...(data.stock !== undefined && { stock: data.stock }),
     });
-    this.products.set(id, updated);
-    return Promise.resolve(updated);
-  }
-
-  patch(): Promise<Product> {
-    return Promise.resolve({} as Product);
+    this.products.set(id, patched);
+    return Promise.resolve(patched);
   }
 }
 
-describe('UpdateProductUseCase', () => {
-  let useCase: UpdateProductUseCase;
+describe('PatchProductUseCase', () => {
+  let useCase: PatchProductUseCase;
   let fakeRepo: FakeProductRepository;
 
   beforeEach(() => {
     fakeRepo = new FakeProductRepository();
-    useCase = new UpdateProductUseCase(fakeRepo);
+    useCase = new PatchProductUseCase(fakeRepo);
   });
 
-  it('should update product when found', async () => {
-    fakeRepo.addProduct(makeProduct({ id: 'uuid-789', name: 'Viejo Nombre' }));
+  it('should patch only provided fields', async () => {
+    fakeRepo.addProduct(
+      makeProduct({
+        id: 'uuid-999',
+        name: 'Nombre Original',
+        price: 100,
+        stock: 10,
+      }),
+    );
 
-    const data: UpdateProductData = {
-      name: 'Nuevo Nombre',
-      category: 'Electrónica',
-      brand: 'Sony',
-      price: 199.99,
-      stock: 25,
+    const data: PatchProductData = {
+      price: 150,
+      stock: 20,
     };
 
-    const result = await useCase.execute('uuid-789', data);
+    const result = await useCase.execute('uuid-999', data);
 
-    expect(result.name).toBe('Nuevo Nombre');
-    expect(result.category).toBe('Electrónica');
-    expect(result.price).toBe(199.99);
+    expect(result.name).toBe('Nombre Original');
+    expect(result.price).toBe(150);
+    expect(result.stock).toBe(20);
   });
 
   it('should throw NotFoundException when product not found', async () => {
-    const data: UpdateProductData = {
-      name: 'Nombre',
-      category: 'Cat',
-      brand: 'Brand',
-      price: 50,
-      stock: 5,
+    const data: PatchProductData = {
+      price: 200,
     };
 
     await expect(useCase.execute('non-existent', data)).rejects.toThrow(

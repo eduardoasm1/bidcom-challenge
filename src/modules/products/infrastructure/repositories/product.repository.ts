@@ -4,6 +4,7 @@ import { Product } from '../../domain/entities/product.entity';
 import {
   CreateProductData,
   IProductRepository,
+  PatchProductData,
   SearchFilters,
   SearchProductsResult,
   UpdateProductData,
@@ -102,6 +103,23 @@ export class ProductRepository implements IProductRepository {
         brand: data.brand,
         price: data.price,
         stock: data.stock,
+      },
+    });
+    return this.toEntity(record);
+  }
+
+  async patch(id: string, data: PatchProductData): Promise<Product> {
+    const record = await this.prisma.db.product.update({
+      where: { id },
+      data: {
+        ...(data.name !== undefined && { name: data.name }),
+        ...(data.description !== undefined && {
+          description: data.description,
+        }),
+        ...(data.category !== undefined && { category: data.category }),
+        ...(data.brand !== undefined && { brand: data.brand }),
+        ...(data.price !== undefined && { price: data.price }),
+        ...(data.stock !== undefined && { stock: data.stock }),
       },
     });
     return this.toEntity(record);

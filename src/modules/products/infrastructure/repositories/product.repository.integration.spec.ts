@@ -240,4 +240,31 @@ describe('ProductRepository (Integration)', () => {
       expect(fromDb!.name).toBe('Nombre Actualizado');
     });
   });
+
+  describe('patch', () => {
+    it('should patch only provided fields', async () => {
+      const created = await aProduct()
+        .withName('Nombre Original')
+        .withCategory('Categoría Original')
+        .withPrice(100)
+        .withStock(10)
+        .build(prisma);
+
+      const patched = await repo.patch(created.id, {
+        price: 250,
+        stock: 50,
+      });
+
+      expect(patched.id).toBe(created.id);
+      expect(patched.name).toBe('Nombre Original');
+      expect(patched.category).toBe('Categoría Original');
+      expect(patched.price).toBe(250);
+      expect(patched.stock).toBe(50);
+
+      // Verificar persistencia
+      const fromDb = await repo.findById(created.id);
+      expect(fromDb!.price).toBe(250);
+      expect(fromDb!.stock).toBe(50);
+    });
+  });
 });
