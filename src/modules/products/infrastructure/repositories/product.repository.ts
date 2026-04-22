@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { Product } from '../../domain/entities/product.entity';
 import {
+  CreateProductData,
   IProductRepository,
   SearchFilters,
   SearchProductsResult,
@@ -67,5 +68,19 @@ export class ProductRepository implements IProductRepository {
       orderBy: { createdAt: 'desc' },
     });
     return records.map((product) => this.toEntity(product));
+  }
+
+  async create(data: CreateProductData): Promise<Product> {
+    const record = await this.prisma.db.product.create({
+      data: {
+        name: data.name,
+        description: data.description ?? null,
+        category: data.category,
+        brand: data.brand,
+        price: data.price,
+        stock: data.stock,
+      },
+    });
+    return this.toEntity(record);
   }
 }

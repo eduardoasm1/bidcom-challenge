@@ -173,4 +173,24 @@ describe('ProductRepository (Integration)', () => {
       expect(result).toHaveLength(0);
     });
   });
+
+  describe('create', () => {
+    it('should create and return product', async () => {
+      const data = {
+        name: 'Teclado Mecánico',
+        description: 'RGB gaming keyboard',
+        category: 'Periféricos',
+        brand: 'Redragon',
+        price: 89.99,
+        stock: 50,
+      };
+
+      const result = await repo.create(data);
+
+      expect(result.id).toBeDefined();
+      expect(result.name).toBe(data.name);
+      expect(result.price).toBe(data.price);
+      expect(result.createdAt).toBeInstanceOf(Date);
+    });
+  });
 });
