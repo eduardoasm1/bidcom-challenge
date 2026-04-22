@@ -96,3 +96,16 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+---
+
+## Decision: Integration tests against real PostgreSQL instead of SQLite in-memory
+
+The challenge suggested using SQLite/in-memory for integration tests. After evaluating the option, the decision was made to run integration tests against a real PostgreSQL instance (configured via `DATABASE_URL` environment variable) for the following technical reasons:
+
+- **`mode: 'insensitive'`** — the product search uses case-insensitive filtering via Prisma's `mode: 'insensitive'`, which is a PostgreSQL-exclusive feature. Prisma does not support this on SQLite.
+- **`@db.Decimal(10, 2)`** — the `price` field uses a PostgreSQL-native decimal type mapping. SQLite has no equivalent, which would require degrading the domain model.
+
+Using SQLite would either require removing these features or accepting that tests run against a different engine than production, introducing the risk of false positives (tests pass on SQLite but fail on PostgreSQL).
+
+Running integration tests against the same database engine used in production is a safer approach that guarantees no divergence between test and production behavior.

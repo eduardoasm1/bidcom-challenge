@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class StandardErrorDto {
-  @ApiProperty({ example: 400 })
-  statusCode: number;
-
-  @ApiProperty({ example: 'Bad Request' })
+  @ApiProperty({ example: 'Product not found' })
   error: string;
 
-  @ApiProperty({ example: 'Validation failed' })
-  message: string;
+  @ApiProperty({ example: 'E0002', pattern: '^[A-Z][0-9]{4}$' })
+  code: string;
+
+  @ApiProperty({ example: 'b7c9f8d2-2e4c-4f0e-a123-9b12a6d4e8c3' })
+  traceId: string;
 }
