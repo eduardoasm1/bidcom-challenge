@@ -8,10 +8,12 @@ import { GetProductByIdUseCase } from './domain/use-cases/get-product-by-id.use-
 import { UpdateProductUseCase } from './domain/use-cases/update-product.use-case';
 import { PatchProductUseCase } from './domain/use-cases/patch-product.use-case';
 import { DeleteProductUseCase } from './domain/use-cases/delete-product.use-case';
+import { AppLoggerService } from '../../common/logger/app-logger.service';
 
 @Module({
   controllers: [ProductsController],
   providers: [
+    AppLoggerService,
     {
       provide: 'IProductRepository',
       useClass: ProductRepository,

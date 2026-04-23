@@ -4,16 +4,20 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { FastifyReply } from 'fastify';
-import { randomUUID } from 'crypto';
 import { DEFAULT_ERROR_CODE, ERROR_CODES } from '../constants/error-codes';
+import { getTraceId } from '../context/request-context';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(HttpExceptionFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const reply = ctx.getResponse<FastifyReply>();
+    const traceId = getTraceId();
 
     const status =
       exception instanceof HttpException
@@ -25,10 +29,19 @@ export class HttpExceptionFilter implements ExceptionFilter {
         ? this.extractMessage(exception)
         : 'Internal server error';
 
+    if (status >= 500) {
+      this.logger.error(
+        `[${traceId}] ${errorMessage}`,
+        exception instanceof Error ? exception.stack : undefined,
+      );
+    } else {
+      this.logger.warn(`[${traceId}] ${status} ${errorMessage}`);
+    }
+
     reply.status(status).send({
       error: errorMessage,
       code: ERROR_CODES[status] ?? DEFAULT_ERROR_CODE,
-      traceId: randomUUID(),
+      traceId,
     });
   }
 

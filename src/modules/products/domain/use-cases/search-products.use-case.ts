@@ -5,8 +5,6 @@ import type {
   SearchProductsResult,
 } from '../interfaces/product.repository.interface';
 
-// aqui rompemos un poco la logica de Clean Architecture para el hecho de ser mas pragmatico
-// en donde aprovechamos la instancia de inject que nos ofrece NestJs y tener menos boilerplate y simplificar codigo
 @Injectable()
 export class SearchProductsUseCase {
   constructor(

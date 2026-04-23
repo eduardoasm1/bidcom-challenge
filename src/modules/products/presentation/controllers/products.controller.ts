@@ -10,9 +10,12 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  Inject,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import type { Cache } from 'cache-manager';
 import { SearchProductsUseCase } from '../../domain/use-cases/search-products.use-case';
+import { AppLoggerService } from '../../../../common/logger/app-logger.service';
 import { SearchProductsQueryDto } from '../dtos/search-products-query.dto';
 import { SearchProductsResponseDto } from '../dtos/search-products.response.dto';
 import { ProductResponseDto } from '../dtos/product.response.dto';
@@ -29,6 +32,8 @@ import { PatchProductDto } from '../dtos/patch-product.dto';
 @ApiTags('products')
 @Controller('products')
 export class ProductsController {
+  private readonly CACHE_KEY_ALL_PRODUCTS = 'all_products';
+
   constructor(
     private readonly searchProductsUseCase: SearchProductsUseCase,
     private readonly findAllProductsUseCase: FindAllProductsUseCase,
@@ -37,6 +42,8 @@ export class ProductsController {
     private readonly updateProductUseCase: UpdateProductUseCase,
     private readonly patchProductUseCase: PatchProductUseCase,
     private readonly deleteProductUseCase: DeleteProductUseCase,
+    private readonly logger: AppLoggerService,
+    @Inject('CACHE_MANAGER') private cacheManager: Cache,
   ) { }
 
   @Get('search')
@@ -59,6 +66,10 @@ export class ProductsController {
   async search(
     @Query() query: SearchProductsQueryDto,
   ): Promise<SearchProductsResponseDto> {
+    this.logger.log(
+      `Searching products with filters: ${JSON.stringify(query)}`,
+      'ProductsController',
+    );
     const result = await this.searchProductsUseCase.execute({
       name: query.name,
       category: query.category,
@@ -68,6 +79,7 @@ export class ProductsController {
       limit: query.limit ?? 20,
       offset: query.offset ?? 0,
     });
+    this.logger.log(`Found ${result.total} products`, 'ProductsController');
 
     return {
       total: result.total,
@@ -92,8 +104,19 @@ export class ProductsController {
     description: 'Error interno',
     type: StandardErrorDto,
   })
-  findAllProducts() {
-    return this.findAllProductsUseCase.execute();
+  async findAllProducts() {
+    const cached = await this.cacheManager.get(this.CACHE_KEY_ALL_PRODUCTS);
+    if (cached) {
+      this.logger.log('Returning cached products', 'ProductsController');
+      return cached;
+    }
+
+    const products = await this.findAllProductsUseCase.execute();
+    const response = {
+      items: products.map((product) => ProductResponseDto.fromEntity(product)),
+    };
+    await this.cacheManager.set(this.CACHE_KEY_ALL_PRODUCTS, response);
+    return response;
   }
 
   @Get(':id')
@@ -147,6 +170,7 @@ export class ProductsController {
   ): Promise<ProductResponseDto> {
     const product = await this.patchProductUseCase.execute(id, dto);
 
+    await this.cacheManager.del(this.CACHE_KEY_ALL_PRODUCTS);
     return ProductResponseDto.fromEntity(product);
   }
 
@@ -183,6 +207,7 @@ export class ProductsController {
       stock: dto.stock,
     });
 
+    await this.cacheManager.del(this.CACHE_KEY_ALL_PRODUCTS);
     return ProductResponseDto.fromEntity(product);
   }
 
@@ -203,6 +228,7 @@ export class ProductsController {
   })
   async delete(@Param('id') id: string): Promise<void> {
     await this.deleteProductUseCase.execute(id);
+    await this.cacheManager.del(this.CACHE_KEY_ALL_PRODUCTS);
   }
 
   @Post()
@@ -233,6 +259,7 @@ export class ProductsController {
       stock: dto.stock,
     });
 
+    await this.cacheManager.del(this.CACHE_KEY_ALL_PRODUCTS);
     return ProductResponseDto.fromEntity(product);
   }
 }

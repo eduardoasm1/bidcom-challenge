@@ -10,6 +10,7 @@ import {
   UpdateProductData,
 } from '../../domain/interfaces/product.repository.interface';
 import type { PrismaProductRecord } from '../types/product.types';
+import { ProductFactory } from '../../domain/factories/product.factory';
 
 @Injectable()
 export class ProductRepository implements IProductRepository {
@@ -30,7 +31,7 @@ export class ProductRepository implements IProductRepository {
 
     return {
       total,
-      items: records.map((product) => this.toEntity(product)),
+      items: records.map((product) => ProductFactory.fromPrismaRecord(product)),
     };
   }
 
@@ -51,32 +52,18 @@ export class ProductRepository implements IProductRepository {
     };
   }
 
-  private toEntity(record: PrismaProductRecord): Product {
-    return new Product(
-      record.id,
-      record.name,
-      record.description,
-      record.category,
-      record.brand,
-      Number(record.price),
-      record.stock,
-      record.createdAt,
-      record.updatedAt,
-    );
-  }
-
   async findAllProducts(): Promise<Product[]> {
     const records = await this.prisma.db.product.findMany({
       orderBy: { createdAt: 'desc' },
     });
-    return records.map((product) => this.toEntity(product));
+    return records.map((product) => ProductFactory.fromPrismaRecord(product));
   }
 
   async findById(id: string): Promise<Product | null> {
     const record = await this.prisma.db.product.findUnique({
       where: { id },
     });
-    return record ? this.toEntity(record) : null;
+    return record ? ProductFactory.fromPrismaRecord(record) : null;
   }
 
   async create(data: CreateProductData): Promise<Product> {
@@ -90,7 +77,7 @@ export class ProductRepository implements IProductRepository {
         stock: data.stock,
       },
     });
-    return this.toEntity(record);
+    return ProductFactory.fromPrismaRecord(record);
   }
 
   async update(id: string, data: UpdateProductData): Promise<Product> {
@@ -105,7 +92,7 @@ export class ProductRepository implements IProductRepository {
         stock: data.stock,
       },
     });
-    return this.toEntity(record);
+    return ProductFactory.fromPrismaRecord(record);
   }
 
   async patch(id: string, data: PatchProductData): Promise<Product> {
@@ -122,7 +109,7 @@ export class ProductRepository implements IProductRepository {
         ...(data.stock !== undefined && { stock: data.stock }),
       },
     });
-    return this.toEntity(record);
+    return ProductFactory.fromPrismaRecord(record);
   }
 
   async delete(id: string): Promise<void> {
