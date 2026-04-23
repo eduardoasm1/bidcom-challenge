@@ -98,11 +98,9 @@ Se agregaron índices específicos para los patrones de búsqueda reales del end
 | `products_category_brand_idx` | `(category, brand)` | Compuesto: cubre búsquedas por `category`, `brand`, o ambos a la vez. PostgreSQL usa el prefijo izquierdo del índice. |
 | `products_price_idx` | `(price)` | Filtros de rango `minPrice`/`maxPrice` — B-tree es óptimo para `>=` y `<=`. |
 
-**Nota:** La búsqueda por `name` usa `LIKE %term%` (wildcard al inicio), por lo que un índice B-tree no la optimiza. Una mejora futura sería un índice GIN con `pg_trgm` en PostgreSQL para full-text search.
-
 ### Tipos de columna
 
-Los campos de texto usan `VarChar` en lugar de `TEXT` ilimitado:
+Los campos de texto usan `VarChar`.
 
 - `name VARCHAR(255)`, `category VARCHAR(100)`, `brand VARCHAR(100)`, `description VARCHAR(1000)`
 
