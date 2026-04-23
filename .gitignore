@@ -28,7 +28,8 @@ lerna-debug.log*
 .settings/
 *.sublime-workspace
 .agent/*
-.atl
+.atl/
+.claude/
 
 # IDE - VSCode
 .vscode/*
