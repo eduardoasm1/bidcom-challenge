@@ -27,6 +27,7 @@ import { UpdateProductUseCase } from '../../domain/use-cases/update-product.use-
 import { PatchProductUseCase } from '../../domain/use-cases/patch-product.use-case';
 import { DeleteProductUseCase } from '../../domain/use-cases/delete-product.use-case';
 import { CreateProductDto } from '../dtos/create-product.dto';
+import { UpdateProductDto } from '../dtos/update-product.dto';
 import { PatchProductDto } from '../dtos/patch-product.dto';
 
 @ApiTags('products')
@@ -164,6 +165,11 @@ export class ProductsController {
     description: 'Producto no encontrado',
     type: StandardErrorDto,
   })
+  @ApiResponse({
+    status: 409,
+    description: 'Conflicto de versión',
+    type: StandardErrorDto,
+  })
   async patch(
     @Param('id') id: string,
     @Body() dto: PatchProductDto,
@@ -194,9 +200,14 @@ export class ProductsController {
     description: 'Producto no encontrado',
     type: StandardErrorDto,
   })
+  @ApiResponse({
+    status: 409,
+    description: 'Conflicto de versión',
+    type: StandardErrorDto,
+  })
   async update(
     @Param('id') id: string,
-    @Body() dto: CreateProductDto,
+    @Body() dto: UpdateProductDto,
   ): Promise<ProductResponseDto> {
     const product = await this.updateProductUseCase.execute(id, {
       name: dto.name,
@@ -205,6 +216,7 @@ export class ProductsController {
       brand: dto.brand,
       price: dto.price,
       stock: dto.stock,
+      version: dto.version,
     });
 
     await this.cacheManager.del(this.CACHE_KEY_ALL_PRODUCTS);

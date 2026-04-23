@@ -23,6 +23,9 @@ export class ProductResponseDto {
   @ApiProperty({ example: 50 })
   stock: number;
 
+  @ApiProperty({ example: 1, description: 'Optimistic locking version' })
+  version: number;
+
   @ApiProperty()
   createdAt: Date;
 
@@ -38,6 +41,7 @@ export class ProductResponseDto {
       brand: product.brand,
       price: product.price,
       stock: product.stock,
+      version: product.version,
       createdAt: product.createdAt,
       updatedAt: product.updatedAt,
     };

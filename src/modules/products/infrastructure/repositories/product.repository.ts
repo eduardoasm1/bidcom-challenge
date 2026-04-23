@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { Product } from '../../domain/entities/product.entity';
 import {
@@ -9,7 +10,6 @@ import {
   SearchProductsResult,
   UpdateProductData,
 } from '../../domain/interfaces/product.repository.interface';
-import type { PrismaProductRecord } from '../types/product.types';
 import { ProductFactory } from '../../domain/factories/product.factory';
 
 @Injectable()
@@ -81,35 +81,61 @@ export class ProductRepository implements IProductRepository {
   }
 
   async update(id: string, data: UpdateProductData): Promise<Product> {
-    const record = await this.prisma.db.product.update({
-      where: { id },
-      data: {
-        name: data.name,
-        description: data.description ?? null,
-        category: data.category,
-        brand: data.brand,
-        price: data.price,
-        stock: data.stock,
-      },
-    });
-    return ProductFactory.fromPrismaRecord(record);
+    try {
+      const record = await this.prisma.db.product.update({
+        where: { id, version: data.version },
+        data: {
+          name: data.name,
+          description: data.description ?? null,
+          category: data.category,
+          brand: data.brand,
+          price: data.price,
+          stock: data.stock,
+          version: { increment: 1 },
+        },
+      });
+      return ProductFactory.fromPrismaRecord(record);
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new ConflictException(
+          `Product with id ${id} was modified by another request. Fetch the latest version and retry.`,
+        );
+      }
+      throw error;
+    }
   }
 
   async patch(id: string, data: PatchProductData): Promise<Product> {
-    const record = await this.prisma.db.product.update({
-      where: { id },
-      data: {
-        ...(data.name !== undefined && { name: data.name }),
-        ...(data.description !== undefined && {
-          description: data.description,
-        }),
-        ...(data.category !== undefined && { category: data.category }),
-        ...(data.brand !== undefined && { brand: data.brand }),
-        ...(data.price !== undefined && { price: data.price }),
-        ...(data.stock !== undefined && { stock: data.stock }),
-      },
-    });
-    return ProductFactory.fromPrismaRecord(record);
+    try {
+      const record = await this.prisma.db.product.update({
+        where: { id, version: data.version },
+        data: {
+          ...(data.name !== undefined && { name: data.name }),
+          ...(data.description !== undefined && {
+            description: data.description,
+          }),
+          ...(data.category !== undefined && { category: data.category }),
+          ...(data.brand !== undefined && { brand: data.brand }),
+          ...(data.price !== undefined && { price: data.price }),
+          ...(data.stock !== undefined && { stock: data.stock }),
+          version: { increment: 1 },
+        },
+      });
+      return ProductFactory.fromPrismaRecord(record);
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new ConflictException(
+          `Product with id ${id} was modified by another request. Fetch the latest version and retry.`,
+        );
+      }
+      throw error;
+    }
   }
 
   async delete(id: string): Promise<void> {

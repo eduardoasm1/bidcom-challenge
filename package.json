@@ -22,7 +22,7 @@
     "db:migrate:dev": "node --env-file=.env node_modules/prisma/build/index.js migrate dev",
     "db:migrate:deploy": "node --env-file=.env node_modules/prisma/build/index.js migrate deploy",
     "db:generate": "node --env-file=.env node_modules/prisma/build/index.js generate",
-    "db:studio": "prisma studio"
+    "db:studio": "node --env-file=.env node_modules/prisma/build/index.js studio"
   },
   "dependencies": {
     "@fastify/static": "^9.1.1",

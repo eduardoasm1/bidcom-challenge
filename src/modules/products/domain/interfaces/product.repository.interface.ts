@@ -31,6 +31,7 @@ export interface UpdateProductData {
   brand: string;
   price: number;
   stock: number;
+  version: number;
 }
 
 export interface PatchProductData {
@@ -40,6 +41,7 @@ export interface PatchProductData {
   brand?: string;
   price?: number;
   stock?: number;
+  version: number;
 }
 
 export interface IProductRepository {

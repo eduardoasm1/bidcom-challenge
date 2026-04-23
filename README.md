@@ -2,51 +2,30 @@
 
 API REST para gestión de productos con NestJS, Fastify, PostgreSQL y Prisma.
 
-## Setup
+## Quick Start (Docker)
+
+```bash
+docker-compose up
+```
+
+Eso levanta PostgreSQL + app con migrations automáticas. API en `http://localhost:3000` • Swagger en `/api`
+
+## Setup local
 
 ```bash
 npm install
-```
-
-Configurar variables de entorno (crear `.env` con `DATABASE_URL`):
-
-```bash
-DATABASE_URL="postgresql://neondb_owner:npg_rk7c3BClVaJt@ep-long-surf-am4rodrm-pooler.c-5.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-
-```
-
-Inicializar la base de datos:
-
-```bash
+cp .env.example .env
+# Editar .env con tu DATABASE_URL
 npm run db:migrate:dev
-```
-
-## Desarrollo
-
-```bash
 npm run start:dev
 ```
-
-API en `http://localhost:3000` • Swagger en `/api`
 
 ## Tests
 
 ```bash
-# Unit tests
-npm run test
-
-# Integration tests (requiere .env.test)
-npm run test:integration
-
-# Coverage
-npm run test:cov
-```
-
-## Docker
-
-```bash
-docker build -t bidcom .
-docker run -p 3000:3000 -e DATABASE_URL="postgresql://neondb_owner:npg_rk7c3BClVaJt@ep-long-surf-am4rodrm-pooler.c-5.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require" bidcom
+npm run test              # Unit tests
+npm run test:integration  # Integration tests
+npm run test:cov          # Coverage
 ```
 
 ## Estructura
@@ -72,6 +51,36 @@ src/common/
 - Dependency injection (NestJS)
 - Logger + tracing (traceId en cada request)
 - Caching en memoria para `GET /products`
+
+## Plus: Concurrencia — Optimistic Locking
+
+En un ecommerce, dos procesos pueden intentar modificar el mismo producto al mismo tiempo (actualizaciones de stock, cambios de precio desde distintos canales). Sin protección, el último en escribir gana y se pierde el cambio del otro.
+
+**Cómo funciona:**
+
+Cada producto tiene un campo `version` (entero, empieza en 1). El cliente lo recibe en cada respuesta y debe enviarlo en `PUT`/`PATCH`:
+
+```
+GET /products/abc  →  { id: "abc", stock: 10, version: 3, ... }
+
+PUT /products/abc  body: { stock: 8, version: 3, ... }  →  200  { version: 4 }
+PUT /products/abc  body: { stock: 5, version: 3, ... }  →  409 Conflict
+```
+
+El segundo request falla porque la versión 3 ya no existe — fue incrementada por el primero. El cliente debe hacer un nuevo GET y reintentar con la versión actual.
+
+**Implementación:**
+
+El update en el repositorio usa `WHERE { id, version }` atómicamente en PostgreSQL. Si la fila no matchea (porque otro request ya la modificó), Prisma lanza `P2025` → se convierte en `409 Conflict`. No hay locks, no hay transacciones extra — la atomicidad la garantiza el motor de base de datos.
+
+```
+client A: GET → version: 3
+client B: GET → version: 3
+client A: PUT version: 3 → OK  (DB: version = 4)
+client B: PUT version: 3 → 409 (WHERE id=x AND version=3 → no rows)
+```
+
+---
 
 ## Por qué PostgreSQL en tests (no SQLite)
 

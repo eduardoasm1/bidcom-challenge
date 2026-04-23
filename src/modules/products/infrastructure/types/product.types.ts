@@ -8,6 +8,7 @@ export interface PrismaProductRecord {
   brand: string;
   price: Prisma.Decimal;
   stock: number;
+  version: number;
   createdAt: Date;
   updatedAt: Date;
 }

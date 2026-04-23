@@ -9,7 +9,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model Product {
@@ -20,6 +19,7 @@ model Product {
   brand       String
   price       Decimal  @db.Decimal(10, 2)
   stock       Int      @default(0)
+  version     Int      @default(1)
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 

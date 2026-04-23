@@ -7,6 +7,7 @@ export class Product {
     public readonly brand: string,
     public readonly price: number,
     public readonly stock: number,
+    public readonly version: number,
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
   ) {}

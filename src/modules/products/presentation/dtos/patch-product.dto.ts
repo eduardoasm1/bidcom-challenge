@@ -1,7 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsInt,
   IsNumber,
   IsOptional,
+  IsPositive,
   IsString,
   Min,
 } from 'class-validator';
@@ -38,4 +40,9 @@ export class PatchProductDto {
   @IsNumber()
   @Min(0)
   stock?: number;
+
+  @ApiProperty({ example: 1, description: 'Current version for optimistic locking' })
+  @IsInt()
+  @IsPositive()
+  version: number;
 }

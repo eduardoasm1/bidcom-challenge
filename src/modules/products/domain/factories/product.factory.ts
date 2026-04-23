@@ -12,6 +12,7 @@ export class ProductFactory {
       record.brand,
       Number(record.price),
       record.stock,
+      record.version,
       record.createdAt,
       record.updatedAt,
     );
@@ -30,6 +31,7 @@ export class ProductFactory {
       data.brand,
       data.price,
       data.stock,
+      1,
       now,
       now,
     );
