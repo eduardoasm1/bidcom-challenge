@@ -3,7 +3,7 @@ import type {
   IProductRepository,
   SearchFilters,
   SearchProductsResult,
-} from '../interfaces/product.repository.interface';
+} from '../../domain/interfaces/product.repository.interface';
 
 @Injectable()
 export class SearchProductsUseCase {

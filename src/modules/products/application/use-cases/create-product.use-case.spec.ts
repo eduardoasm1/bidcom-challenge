@@ -1,8 +1,8 @@
 import type {
   CreateProductData,
   IProductRepository,
-} from '../interfaces/product.repository.interface';
-import { Product } from '../entities/product.entity';
+} from '../../domain/interfaces/product.repository.interface';
+import { Product } from '../../domain/entities/product.entity';
 import { CreateProductUseCase } from './create-product.use-case';
 
 const makeProduct = (overrides: Partial<Product> = {}): Product =>

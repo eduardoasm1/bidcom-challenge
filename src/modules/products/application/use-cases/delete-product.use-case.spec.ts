@@ -1,5 +1,5 @@
-import type { IProductRepository } from '../interfaces/product.repository.interface';
-import { Product } from '../entities/product.entity';
+import type { IProductRepository } from '../../domain/interfaces/product.repository.interface';
+import { Product } from '../../domain/entities/product.entity';
 import { DeleteProductUseCase } from './delete-product.use-case';
 import { NotFoundException } from '@nestjs/common';
 

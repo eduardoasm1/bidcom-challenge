@@ -3,8 +3,8 @@ import type {
   IProductRepository,
   SearchFilters,
   SearchProductsResult,
-} from '../interfaces/product.repository.interface';
-import { Product } from '../entities/product.entity';
+} from '../../domain/interfaces/product.repository.interface';
+import { Product } from '../../domain/entities/product.entity';
 
 const makeProduct = (overrides: Partial<Product> = {}): Product =>
   new Product(

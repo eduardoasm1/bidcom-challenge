@@ -1,8 +1,8 @@
 import type {
   IProductRepository,
   PatchProductData,
-} from '../interfaces/product.repository.interface';
-import { Product } from '../entities/product.entity';
+} from '../../domain/interfaces/product.repository.interface';
+import { Product } from '../../domain/entities/product.entity';
 import { PatchProductUseCase } from './patch-product.use-case';
 import { NotFoundException } from '@nestjs/common';
 
