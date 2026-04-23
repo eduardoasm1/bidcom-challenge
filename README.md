@@ -12,20 +12,54 @@ Eso levanta PostgreSQL + app con migrations automáticas. API en `http://localho
 
 ## Setup local
 
+### 1. Instalación
+
 ```bash
 npm install
 cp .env.example .env
-# Editar .env con tu DATABASE_URL
+```
+
+### 2. Variables de entorno
+
+#### Desarrollo (`.env`)
+
+```bash
+# PostgreSQL - reemplazar con tus valores
+DATABASE_URL="postgresql://neondb_owner:npg_rk7c3BClVaJt@ep-long-surf-am4rodrm-pooler.c-5.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+PORT=3000
+```
+
+#### Tests de Integración (`.env.test`)
+
+```bash
+# Misma BD que desarrollo pero con limpieza entre tests
+DATABASE_URL="postgresql://neondb_owner:npg_rk7c3BClVaJt@ep-long-surf-am4rodrm-pooler.c-5.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+```
+
+**Nota técnica:** Actualmente, tests y desarrollo comparten BD. Los tests limpian con `deleteMany()` antes de cada test. 
+
+**Informacion:** Para una mejora en los tests se puede crear un schema separado (`schema=test`) o BD dedicada para tests para evitar riesgo de pérdida de datos de desarrollo. Esto se puede agregar fácilmente sin cambios mayores en el código.
+
+### 3. Migraciones y ejecución
+
+```bash
 npm run db:migrate:dev
 npm run start:dev
 ```
 
+### Docker
+
+```bash
+docker-compose up
+```
+API disponible en `http://localhost:3000` • Swagger en `/api`
+
 ## Tests
 
 ```bash
-npm run test              # Unit tests
-npm run test:integration  # Integration tests
-npm run test:cov          # Coverage
+npm run test              # Unit tests (16 tests)
+npm run test:integration  # Integration tests (18 tests)
+npm run test:cov          # Coverage report
 ```
 
 ## Estructura
